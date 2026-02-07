@@ -1,0 +1,93 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Card */
+.card {
+  background: white;
+  width: 350px;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Heading */
+.card h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1f2937; /* dark gray */
+}
+
+/* Error Message */
+.error-message {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid #fca5a5;
+}
+
+/* Inputs */
+.card input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.card input:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+}
+
+.card input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* Button */
+.card button {
+  width: 100%;
+  padding: 12px;
+  background: #16a34a; /* green */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.card button:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.card button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Text */
+.card p {
+  text-align: center;
+  margin-top: 15px;
+  color: #374151;
+}
+
+/* Link */
+.card span {
+  color: #16a34a;
+  cursor: pointer;
+  font-weight: bold;
+}
