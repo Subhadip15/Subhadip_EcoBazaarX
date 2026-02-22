@@ -117,6 +117,29 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
+.content-overlay p {
+  color: #f4fff6;
+  max-width: 680px;
+  margin: 8px auto 14px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.open-catalog-btn {
+  border: 1px solid #94f2be;
+  background: rgba(13, 99, 59, 0.78);
+  color: #edfff5;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.open-catalog-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(12, 84, 51, 0.9);
+}
+
 .dashboard-card {
   background: white;
   width: 500px;

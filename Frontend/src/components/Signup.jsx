@@ -63,7 +63,7 @@ function Signup({ onSignupSuccess }) {
     setLoading(true);
     try {
       const { confirmPassword, ...userData } = formData;
-      const user = await signup(userData);
+      const { user } = await signup(userData);
       onSignupSuccess(user);
       navigate("/dashboard"); // ✅ redirect after signup
     } catch (err) {

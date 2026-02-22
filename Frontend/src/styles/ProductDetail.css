@@ -1,0 +1,49 @@
+.product-detail-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  margin-top: 20px;
+}
+
+.image-section img {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.impact-card {
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.bar {
+  background: #e2e8f0;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.fill {
+  background: #38a169;
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+.bar-group {
+  margin-bottom: 15px;
+}
+
+.bar-group label {
+  font-size: 0.9rem;
+  color: #4a5568;
+}

@@ -57,6 +57,13 @@ function Dashboard({ onLogout }) {
         </a>
         <div className="content-overlay">
           <h2>Welcome to EcoBazar!</h2>
+          <p>Manage eco product catalog, carbon footprint, and sustainability insights.</p>
+          <button
+            className="open-catalog-btn"
+            onClick={() => navigate("/products")}
+          >
+            Open Product Catalog Page
+          </button>
         </div>
       </div>
     </>
