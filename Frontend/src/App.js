@@ -15,12 +15,11 @@ const ProtectedRoute = ({ user, children, adminOnly = false }) => {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
-  // If a route is marked adminOnly, check the user role
+
   if (adminOnly && user.role !== "ADMIN") {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 };
 
@@ -60,12 +59,26 @@ function App() {
         {/* Public Routes */}
         <Route
           path="/login"
-          element={user ? <Navigate to="/dashboard" /> : <Login onLoginSuccess={handleLoginSuccess} />}
+          element={
+            user ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <Login onLoginSuccess={handleLoginSuccess} />
+            )
+          }
         />
+
         <Route
           path="/signup"
-          element={user ? <Navigate to="/dashboard" /> : <Signup onSignupSuccess={handleSignupSuccess} />}
+          element={
+            user ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <Signup onSignupSuccess={handleSignupSuccess} />
+            )
+          }
         />
+
         <Route
           path="/forgot-password"
           element={user ? <Navigate to="/dashboard" /> : <ForgotPassword />}
@@ -81,7 +94,6 @@ function App() {
           }
         />
 
-<<<<<<< HEAD
         {/* Product List */}
         <Route
           path="/products"
@@ -92,7 +104,7 @@ function App() {
           }
         />
 
-        {/* FIXED: Changed :productId to :id to match useParams() in ProductDetail */}
+        {/* Product Details */}
         <Route
           path="/products/:id"
           element={
@@ -103,19 +115,6 @@ function App() {
         />
 
         {/* Default Redirect */}
-=======
-        <Route
-          path="/products"
-          element={user ? <ProductCatalog /> : <Navigate to="/login" />}
-        />
-
-        <Route
-          path="/products/:productId"
-          element={user ? <ProductDetail /> : <Navigate to="/login" />}
-        />
-
-        {/* Default Route */}
->>>>>>> c3670d096ec4ec373c9e00b78303e75bf37d6fd4
         <Route
           path="*"
           element={<Navigate to={user ? "/dashboard" : "/login"} />}

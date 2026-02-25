@@ -1,228 +1,130 @@
-<<<<<<< HEAD
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api";
+/* ================= API CONFIG ================= */
 
-/**
- * Helper to get Auth Headers
- */
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  return {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "Content-Type": "application/json",
-    },
-  };
-};
-
-/**
- * GET - All products from database
- */
-export const getProducts = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/products`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    throw error.response?.data || "Could not fetch products";
-  }
-};
-
-/**
- * GET - Single product by ID (This was missing!)
- * Matches: GET /api/product/{id}
- */
-export const getProductById = async (id) => {
-  try {
-    const response = await axios.get(`${API_URL}/product/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching product by ID:", error);
-    throw error.response?.data || "Product not found";
-  }
-};
-
-/**
- * POST - Create product (Admin only)
- */
-export const createProduct = async (productData) => {
-  try {
-    const response = await axios.post(
-      `${API_URL}/product`,
-      productData,
-      getAuthHeaders()
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || "Failed to create product";
-  }
-};
-
-/**
- * PUT - Update product (Admin only)
- */
-export const updateProduct = async (id, productData) => {
-  try {
-    const response = await axios.put(
-      `${API_URL}/product/${id}`,
-      productData,
-      getAuthHeaders()
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || "Failed to update product";
-  }
-};
-
-/**
- * DELETE - Remove product (Admin only)
- */
-export const deleteProduct = async (id) => {
-  try {
-    const response = await axios.delete(
-      `${API_URL}/product/${id}`, 
-      getAuthHeaders()
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || "Failed to delete product";
-  }
-};
-
-/**
- * SEARCH - Search products
- */
-export const searchProducts = async (keyword) => {
-  try {
-    const response = await axios.get(`${API_URL}/products/search`, {
-      params: { keyword },
-    });
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || "Search failed";
-  }
-};
-=======
 const API_BASE_URL =
   process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
-const PRODUCT_API_URL = `${API_BASE_URL}/products`;
+
+const PRODUCT_API_URL = `${API_BASE_URL}/api`;
+
+/* ================= AUTH HEADERS ================= */
 
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
 
-async function parseResponse(response, fallbackMessage) {
-  const text = await response.text();
-  let data = null;
-
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = null;
+  return {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` })
     }
-  }
-
-  if (!response.ok) {
-    const message = data?.message || data?.error || fallbackMessage;
-    throw new Error(message);
-  }
-
-  return data;
+  };
 }
+
+/* ================= ERROR HANDLER ================= */
+
+function handleError(error, fallbackMessage) {
+  if (error.response) {
+    const status = error.response.status;
+
+    if (status === 401) {
+      throw new Error("Session expired. Please login again.");
+    }
+
+    if (status === 403) {
+      throw new Error("Access denied. Admin privileges required.");
+    }
+
+    if (status === 404) {
+      throw new Error("API route not found. Check backend endpoint.");
+    }
+
+    throw new Error(
+      error.response.data?.message ||
+      error.response.data?.error ||
+      fallbackMessage
+    );
+  }
+
+  throw new Error(
+    `Cannot connect to backend at ${API_BASE_URL}. Is server running?`
+  );
+}
+
+/* ================= GET ALL PRODUCTS ================= */
 
 export async function getProducts() {
-  let response;
   try {
-    response = await fetch(PRODUCT_API_URL, {
-      headers: {
-        ...getAuthHeaders()
-      }
-    });
-  } catch {
-    throw new Error(
-      `Cannot reach backend API at ${API_BASE_URL}. Ensure backend is running.`
-    );
+    const res = await axios.get(`${PRODUCT_API_URL}/products`);
+    return Array.isArray(res.data) ? res.data : [];
+  } catch (error) {
+    handleError(error, "Failed to load products");
   }
-
-  const data = await parseResponse(response, "Failed to load products");
-  return Array.isArray(data) ? data : [];
 }
 
-export async function getProductById(productId) {
-  let response;
-  try {
-    response = await fetch(`${PRODUCT_API_URL}/${productId}`, {
-      headers: {
-        ...getAuthHeaders()
-      }
-    });
-  } catch {
-    throw new Error(
-      `Cannot reach backend API at ${API_BASE_URL}. Ensure backend is running.`
-    );
-  }
+/* ================= GET PRODUCT BY ID ================= */
 
-  return parseResponse(response, "Failed to load product");
+export async function getProductById(id) {
+  try {
+    const res = await axios.get(`${PRODUCT_API_URL}/product/${id}`);
+    return res.data;
+  } catch (error) {
+    handleError(error, "Product not found");
+  }
 }
+
+/* ================= CREATE PRODUCT (ADMIN) ================= */
 
 export async function createProduct(productData) {
-  let response;
   try {
-    response = await fetch(PRODUCT_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeaders()
-      },
-      body: JSON.stringify(productData)
-    });
-  } catch {
-    throw new Error(
-      `Cannot reach backend API at ${API_BASE_URL}. Ensure backend is running.`
+    const res = await axios.post(
+      `${PRODUCT_API_URL}/product`,
+      productData,
+      getAuthHeaders()
     );
+    return res.data;
+  } catch (error) {
+    handleError(error, "Failed to create product");
   }
-
-  return parseResponse(response, "Failed to create product");
 }
 
-export async function updateProduct(productId, productData) {
-  let response;
-  try {
-    response = await fetch(`${PRODUCT_API_URL}/${productId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeaders()
-      },
-      body: JSON.stringify(productData)
-    });
-  } catch {
-    throw new Error(
-      `Cannot reach backend API at ${API_BASE_URL}. Ensure backend is running.`
-    );
-  }
+/* ================= UPDATE PRODUCT (ADMIN) ================= */
 
-  return parseResponse(response, "Failed to update product");
+export async function updateProduct(id, productData) {
+  try {
+    const res = await axios.put(
+      `${PRODUCT_API_URL}/product/${id}`,
+      productData,
+      getAuthHeaders()
+    );
+    return res.data;
+  } catch (error) {
+    handleError(error, "Failed to update product");
+  }
 }
 
-export async function deleteProduct(productId) {
-  let response;
-  try {
-    response = await fetch(`${PRODUCT_API_URL}/${productId}`, {
-      method: "DELETE",
-      headers: {
-        ...getAuthHeaders()
-      }
-    });
-  } catch {
-    throw new Error(
-      `Cannot reach backend API at ${API_BASE_URL}. Ensure backend is running.`
-    );
-  }
+/* ================= DELETE PRODUCT (ADMIN) ================= */
 
-  await parseResponse(response, "Failed to delete product");
+export async function deleteProduct(id) {
+  try {
+    const res = await axios.delete(
+      `${PRODUCT_API_URL}/product/${id}`,
+      getAuthHeaders()
+    );
+    return res.data;
+  } catch (error) {
+    handleError(error, "Failed to delete product");
+  }
 }
->>>>>>> c3670d096ec4ec373c9e00b78303e75bf37d6fd4
+
+/* ================= SEARCH PRODUCTS ================= */
+
+export async function searchProducts(keyword) {
+  try {
+    const res = await axios.get(`${PRODUCT_API_URL}/products/search`, {
+      params: { keyword }
+    });
+    return res.data;
+  } catch (error) {
+    handleError(error, "Search failed");
+  }
+}
