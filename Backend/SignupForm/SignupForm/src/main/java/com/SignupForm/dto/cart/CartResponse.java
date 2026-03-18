@@ -30,6 +30,7 @@ public class CartResponse {
         private Long itemId;
         private Long productId;
         private String productName;
+        private String image;
         private Double price;
         private Integer quantity;
         private Double subtotal;

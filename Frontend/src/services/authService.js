@@ -80,6 +80,27 @@ export const login = async ({ email, password }) => {
   return data;
 };
 
+// ================= FORGOT PASSWORD =================
+export const forgotPassword = async (email) => {
+  const data = await fetchWithErrorHandling(
+    `${API_URL}/forgot?email=${encodeURIComponent(email)}`,
+    { method: "POST" },
+    "Failed to send OTP"
+  );
+  return data;
+};
+
+// ================= RESET PASSWORD =================
+export const resetPassword = async ({ email, otp, newPassword }) => {
+  const params = new URLSearchParams({ email, otp, newPassword });
+  const data = await fetchWithErrorHandling(
+    `${API_URL}/reset?${params.toString()}`,
+    { method: "POST" },
+    "Failed to reset password"
+  );
+  return data;
+};
+
 // ================= LOGOUT =================
 export const logout = () => {
   localStorage.removeItem("user");

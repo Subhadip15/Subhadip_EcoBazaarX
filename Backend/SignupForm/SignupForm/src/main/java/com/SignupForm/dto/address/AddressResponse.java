@@ -8,8 +8,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class AddressResponse {
-
     private Long id;
+    private String fullName;
     private String street;
     private String city;
     private String state;

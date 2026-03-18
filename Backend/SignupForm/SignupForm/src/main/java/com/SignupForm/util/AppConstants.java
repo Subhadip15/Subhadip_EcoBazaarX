@@ -6,7 +6,7 @@ public final class AppConstants {
 
     // ORDER STATUS
     public static final String ORDER_PENDING = "PENDING";
-    public static final String ORDER_PROCESSING = "PROCESSING";
+    public static final String ORDER_PROCESSING = "ORDERED";
     public static final String ORDER_PLACED = "PLACED";
     public static final String ORDER_CONFIRMED = "CONFIRMED";
     public static final String ORDER_SHIPPED = "SHIPPED";

@@ -1,5 +1,6 @@
 package com.SignupForm.controller;
 
+import com.SignupForm.dto.product.ProductRequest;
 import com.SignupForm.entity.Product;
 import com.SignupForm.entity.CarbonData;
 import com.SignupForm.entity.CarbonBreakdown;
@@ -32,6 +33,7 @@ public class ProductController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
     @GetMapping("/products/search")
     public List<Product> search(@RequestParam String keyword) {
         return productRepo.findByNameContainingIgnoreCase(keyword);
@@ -39,28 +41,17 @@ public class ProductController {
 
     @PostMapping("/product")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> create(@RequestBody Product product) {
-        product.setPrice(round(product.getPrice()));
-        processCarbonData(product);
+    public ResponseEntity<Product> create(@RequestBody ProductRequest dto) {
+        Product product = mapToEntity(new Product(), dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(productRepo.save(product));
     }
 
     @PutMapping("/product/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product details) {
-        return productRepo.findById(id).map(p -> {
-            p.setName(details.getName());
-            p.setPrice(round(details.getPrice()));
-            p.setCategory(details.getCategory());
-            p.setImage(details.getImage());
-            p.setSeller(details.getSeller());
-            p.setDescription(details.getDescription());
-            p.setIsEcoFriendly(details.getIsEcoFriendly());
-
-            p.setCarbonData(details.getCarbonData());
-            processCarbonData(p);
-
-            return ResponseEntity.ok(productRepo.save(p));
+    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody ProductRequest dto) {
+        return productRepo.findById(id).map(existingProduct -> {
+            Product updatedProduct = mapToEntity(existingProduct, dto);
+            return ResponseEntity.ok(productRepo.save(updatedProduct));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -71,34 +62,51 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    private void processCarbonData(Product product) {
-        if (product.getCarbonData() != null) {
-            CarbonData cd = product.getCarbonData();
-            CarbonBreakdown br = cd.getBreakdown();
+    /**
+     * Maps the flat DTO from React to the nested Entity structure for Hibernate.
+     */
+    private Product mapToEntity(Product product, ProductRequest dto) {
+        // Basic Product Info
+        product.setName(dto.getName());
+        product.setCategory(dto.getCategory());
+        product.setSeller(dto.getSeller());
+        product.setPrice(round(dto.getPrice()));
+        product.setImage(dto.getImage());
+        product.setDescription(dto.getDescription());
+        product.setIsEcoFriendly(dto.getIsEcoFriendly());
 
-            if (br != null) {
-                // Safety: Get values or default to 0.0 to prevent NullPointerException
-                double m = (br.getManufacturing() != null) ? br.getManufacturing() : 0.0;
-                double p = (br.getPackaging() != null) ? br.getPackaging() : 0.0;
-                double t = (br.getTransport() != null) ? br.getTransport() : 0.0;
-                double h = (br.getHandling() != null) ? br.getHandling() : 0.0;
+        // Carbon Breakdown Nesting
+        CarbonBreakdown br = new CarbonBreakdown();
+        double m = round(dto.getManufacturing());
+        double p = round(dto.getPackaging());
+        double t = round(dto.getTransport());
+        double h = round(dto.getHandling());
 
-                // Set rounded values back to object
-                br.setManufacturing(round(m));
-                br.setPackaging(round(p));
-                br.setTransport(round(t));
-                br.setHandling(round(h));
+        br.setManufacturing(m);
+        br.setPackaging(p);
+        br.setTransport(t);
+        br.setHandling(h);
 
-                // If Total is missing or zero, calculate sum
-                if (cd.getTotalCO2ePerKg() == null || cd.getTotalCO2ePerKg() == 0) {
-                    cd.setTotalCO2ePerKg(round(m + p + t + h));
-                    cd.setMethod("automatic");
-                } else {
-                    cd.setTotalCO2ePerKg(round(cd.getTotalCO2ePerKg()));
-                    cd.setMethod("manual");
-                }
-            }
+        // Carbon Data Wrapper
+        CarbonData cd = new CarbonData();
+        cd.setBreakdown(br);
+        cd.setMaterial("Standard"); // Default material
+
+        // Total CO2 Calculation Logic
+        if (dto.getTotalCO2e() != null && dto.getTotalCO2e() > 0) {
+            cd.setTotalCO2ePerKg(round(dto.getTotalCO2e()));
+            cd.setMethod("manual");
+        } else {
+            cd.setTotalCO2ePerKg(round(m + p + t + h));
+            cd.setMethod("automatic");
         }
+
+        product.setCarbonData(cd);
+
+        // Ensure top-level emission field is synced with total
+        product.setEmission(cd.getTotalCO2ePerKg());
+
+        return product;
     }
 
     private Double round(Double value) {

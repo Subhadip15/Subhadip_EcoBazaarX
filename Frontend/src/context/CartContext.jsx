@@ -1,5 +1,11 @@
-// src/context/CartContext.jsx
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import {
+  fetchCart as fetchCartApi,
+  addToCart as addToCartApi,
+  removeFromCart as removeFromCartApi,
+  updateQuantity as updateQuantityApi,
+  clearCart as clearCartApi,
+} from "../services/cartService";
 
 const CartContext = createContext();
 
@@ -12,37 +18,35 @@ export const CartProvider = ({ children }) => {
 
   const token = localStorage.getItem("token");
 
-  // ✅ Auto calculate subtotal from items
+  // ✅ FIXED: Only sum the prices (assuming backend sends line-item total)
   const subtotal = useMemo(() => {
     return items.reduce((total, item) => {
-      return total + item.price * item.quantity;
+      return total + (item.price || 0);
     }, 0);
   }, [items]);
 
-  // ✅ Auto calculate emission
+  // ✅ FIXED: Only sum the emissions to prevent double multiplication (10.80 issue)
   const totalEmission = useMemo(() => {
     return items.reduce((total, item) => {
-      return total + (item.emission || 0) * item.quantity;
+      return total + (item.emission || 0);
     }, 0);
   }, [items]);
 
-  // ================= FETCH CART =================
   const fetchCart = async () => {
     if (!token) {
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
+      const data = await fetchCartApi();
 
-      const res = await fetch("http://localhost:8080/api/cart", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const normalizedItems = (data.items || []).map(item => ({
+        ...item,
+        image: item.image || item.productImage || (item.product && item.product.image) || ""
+      }));
 
-      const data = await res.json();
-
-      setItems(data.items || []);
+      setItems(normalizedItems);
       setCartId(data.cartId || null);
     } catch (err) {
       console.error("Fetch cart error:", err);
@@ -55,67 +59,36 @@ export const CartProvider = ({ children }) => {
     fetchCart();
   }, [token]);
 
-  // ================= ADD ITEM =================
   const addToCart = async (productId, quantity) => {
     try {
-      await fetch("http://localhost:8080/api/cart/add", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productId, quantity }),
-      });
-
-      fetchCart(); // refresh cart
+      await addToCartApi(productId, quantity);
+      await fetchCart(); 
     } catch (err) {
       console.error("Add to cart error:", err);
     }
   };
 
-  // ================= REMOVE ITEM =================
   const removeFromCart = async (itemId) => {
     try {
-      await fetch(`http://localhost:8080/api/cart/remove/${itemId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      fetchCart(); // refresh cart
+      await removeFromCartApi(itemId);
+      await fetchCart(); 
     } catch (err) {
       console.error("Remove error:", err);
     }
   };
 
-  // ================= UPDATE QUANTITY =================
   const updateQuantity = async (productId, change) => {
     try {
-      await fetch("http://localhost:8080/api/cart/update", {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productId,
-          quantityChange: change,
-        }),
-      });
-
-      fetchCart(); // refresh cart
+      await updateQuantityApi(productId, change);
+      await fetchCart(); 
     } catch (err) {
       console.error("Update quantity error:", err);
     }
   };
 
-  // ================= CLEAR CART =================
   const clearCart = async () => {
     try {
-      await fetch("http://localhost:8080/api/cart/clear", {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await clearCartApi();
       setItems([]);
       setCartId(null);
     } catch (err) {

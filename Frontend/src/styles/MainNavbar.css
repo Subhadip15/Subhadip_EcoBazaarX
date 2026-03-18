@@ -1,73 +1,351 @@
+:root {
+  /* Colors */
+  --eco-primary: #2da65d;
+  --eco-dark: #1a6a41;
+  --error-red: #ff6161;
+  --error-dark: #d63031;
+  --text-main: #2d3436;
+  --text-light: #777;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+  --bg-hover: rgba(45, 166, 93, 0.1);
+  
+  /* Layout & Transitions */
+  --sidebar-width: 320px;
+  --nav-height: 70px;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ===============================
+   NAVBAR BASE
+=================================*/
 .main-nav {
   position: sticky;
   top: 0;
-  z-index: 60;
-  backdrop-filter: blur(10px);
-  background: linear-gradient(
-    180deg,
-    rgba(246, 255, 249, 0.96),
-    rgba(240, 251, 244, 0.86)
-  );
-  border-bottom: 1px solid var(--line);
-  box-shadow: 0 8px 26px rgba(17, 52, 33, 0.08);
+  z-index: 1000;
+  height: var(--nav-height);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #eee;
+  box-shadow: var(--shadow-sm);
 }
 
 .main-nav-shell {
-  max-width: 1180px;
+  max-width: 1240px;
+  height: 100%;
   margin: 0 auto;
-  padding: 10px clamp(14px, 2.8vw, 34px);
+  padding: 0 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
 }
 
 .brand {
-  text-decoration: none;
+  font-size: 22px;
   font-weight: 800;
-  color: var(--primary-strong);
-  font-size: 20px;
-  letter-spacing: 0.03em;
-  position: relative;
-  padding-left: 16px;
+  color: var(--eco-dark);
+  text-decoration: none;
 }
 
-.brand::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(145deg, #2da65d, #1a6a41);
-  box-shadow: 0 0 0 5px rgba(41, 153, 86, 0.16);
-}
-
+/* ===============================
+   NAV LINKS & CART
+=================================*/
 .main-nav-links {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 10px;
+  margin-left: auto;
+  margin-right: 25px;
 }
 
 .main-nav-links a {
-  text-decoration: none;
-  color: var(--text);
-  border-radius: 999px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.75);
+  padding: 8px 16px;
+  font-size: 14px;
   font-weight: 600;
+  color: #444;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: var(--transition-smooth);
 }
 
-.main-nav-links a:hover {
-  background: #eef9f1;
-  border-color: var(--line);
-}
-
+.main-nav-links a:hover, 
 .main-nav-links a.active {
-  background: linear-gradient(145deg, var(--primary), var(--primary-strong));
+  color: var(--eco-primary);
+  background: var(--bg-hover);
+}
+
+.cart-link-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cart-badge {
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 800;
   color: #fff;
-  border-color: var(--primary-strong);
+  background: var(--error-red);
+  border-radius: 10px;
+}
+
+/* ===============================
+   PROFILE ICON (NAVBAR)
+=================================*/
+.profile-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(145deg, var(--eco-primary), var(--eco-dark));
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(26, 106, 65, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.profile-icon:hover {
+  transform: scale(1.05);
+}
+
+/* ===============================
+   SIDEBAR & OVERLAY
+=================================*/
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease;
+}
+
+.side-sidebar {
+  position: fixed;
+  top: 0;
+  right: calc(var(--sidebar-width) * -1);
+  z-index: 2000;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+  transition: var(--transition-smooth);
+}
+
+.side-sidebar.open {
+  right: 0;
+}
+
+.sidebar-header {
+  padding: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.close-btn {
+  font-size: 28px;
+  color: #999;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ===============================
+   SIDEBAR USER IDENTITY
+=================================*/
+.sidebar-user-info {
+  padding: 20px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.user-avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--eco-primary), var(--eco-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.user-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-details-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.user-email-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.user-role-badge {
+  align-self: center;
+  margin-top: 6px;
+  background: #f1f3f6;
+  color: var(--eco-dark);
+  font-size: 10px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ===============================
+   SIDEBAR CONTENT & LINKS
+=================================*/
+.sidebar-content {
+  padding: 15px 0;
+  overflow-y: auto;
+}
+
+.sidebar-link {
+  width: 100%;
+  padding: 14px 25px;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.sidebar-link:hover {
+  background: #f9fbf9;
+  color: var(--eco-primary);
+}
+
+.sidebar-link .icon {
+  width: 24px;
+  margin-right: 15px;
+  font-size: 18px;
+  text-align: center;
+}
+
+.sidebar-divider {
+  height: 1px;
+  margin: 15px 25px;
+  background: #f1f1f1;
+}
+
+.logout-link { color: var(--error-red); }
+.logout-link:hover { 
+  color: var(--error-dark); 
+  background: #fff5f5; 
+}
+
+.back-link {
+  color: var(--eco-primary);
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* ===============================
+   ANIMATIONS & RESPONSIVE
+=================================*/
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInSidebar {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.fade-in {
+  animation: fadeInSidebar 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .main-nav-links {
+    gap: 0;
+    margin-right: 10px;
+  }
+  .main-nav-links a {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .side-sidebar {
+    --sidebar-width: 85%;
+  }
+}
+
+/* Targeted Icon Styling */
+.sidebar-link .icon {
+  width: 28px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Target the 'i' tag directly to override Font Awesome defaults */
+.sidebar-link .icon i {
+  font-size: 18px;
+  color: var(--text-light); /* Default subtle color */
+  transition: var(--transition-smooth);
+}
+
+/* Hover State: Change the icon color when the link is hovered */
+.sidebar-link:hover {
+  background: var(--bg-hover);
+  color: var(--eco-primary);
+}
+
+.sidebar-link:hover .icon i {
+  color: var(--eco-primary) !important; /* Force color change */
+  transform: scale(1.1); /* Subtle pop effect */
+}
+
+/* Special Case: Logout Icon Hover */
+.logout-link:hover .icon i {
+  color: var(--error-red) !important;
+}
+
+/* Back Link Icon Hover */
+.back-link .icon i {
+  color: var(--eco-primary);
 }

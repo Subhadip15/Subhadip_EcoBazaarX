@@ -13,7 +13,7 @@ public class UpdateCartRequest {
 
     @NotNull(message = "Product ID is required")
     private Long productId;
-
+    private String image;
     /**
      * Quantity change can be +1 or -1
      */

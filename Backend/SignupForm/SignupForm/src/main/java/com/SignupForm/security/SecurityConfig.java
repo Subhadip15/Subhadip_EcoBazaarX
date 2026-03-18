@@ -30,97 +30,71 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                // Enable CORS & Disable CSRF (JWT Stateless)
+                // 1. Basic Security Setup
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // Stateless Session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Authorization Rules
                 .authorizeHttpRequests(auth -> auth
-
-                        // Allow Preflight requests
+                        // Allow OPTIONS for all paths (Crucial for CORS preflight)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // ================= AUTH (Public) =================
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/signup",
-                                "/api/auth/forgot",
-                                "/api/auth/reset"
-                        ).permitAll()
+                        // 2. Public Endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/product/**").permitAll()
+                        .requestMatchers("/error").permitAll()
 
-                        // ================= PUBLIC PRODUCT VIEW =================
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/products",
-                                "/api/product/**"
-                        ).permitAll()
-
-                        // ================= ADMIN PRODUCT MANAGEMENT =================
+                        // 3. Admin-Only Product Management
                         .requestMatchers(HttpMethod.POST, "/api/product/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/product/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/product/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/product/**").hasRole("ADMIN")
-
-                        // ================= CART =================
-                        .requestMatchers("/api/cart/**").hasRole("USER")
-
-                        // ================= ORDERS =================
-                        .requestMatchers("/api/orders/**").hasRole("USER")
-
-                        // ================= PROFILE =================
-                        .requestMatchers("/api/profile/**").hasRole("USER")
-
-                        // ================= RECOMMENDATIONS =================
-                        .requestMatchers("/api/recommendations/**").hasRole("USER")
-
-                        // ================= ADMIN PANEL =================
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // ================= ERROR =================
-                        .requestMatchers("/error").permitAll()
+                        // 4. Shared Secure Routes (User & Admin)
+                        // ✅ ADDED /api/wishlist/** here to allow CRUD operations for logged-in users
+                        .requestMatchers(
+                                "/api/cart/**",
+                                "/api/orders/**",
+                                "/api/profile/**",
+                                "/api/addresses/**",
+                                "/api/wishlist/**",
+                                "/api/insights/user/**"
+                        ).hasAnyRole("USER", "ADMIN")
 
-                        // Any other request must be authenticated
+                        // 5. Catch-all
                         .anyRequest().authenticated()
                 )
 
-                // Add JWT Filter
+                // 6. JWT Filter Placement
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // ================= CORS CONFIG =================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Frontend URLs
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:3001"
+                "http://localhost:3001",
+                "http://localhost:5173"
         ));
 
-        // Allowed Methods
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        // Allowed Headers
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
-                "Cache-Control"
+                "Cache-Control",
+                "X-Requested-With"
         ));
 
-        // Allow credentials (JWT)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 }

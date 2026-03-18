@@ -2,13 +2,12 @@ package com.SignupForm.dto.address;
 
 import lombok.*;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class AddressRequest {
-
+    private String fullName;
     private String street;
     private String city;
     private String state;

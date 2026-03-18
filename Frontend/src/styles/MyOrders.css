@@ -1,75 +1,175 @@
-/* MyOrders.css */
-.orders-container {
-  background-color: #f1f3f6; /* Flipkart's signature light gray background */
+.orders-page-wrapper {
+  background: #f1f3f6;
   min-height: 100vh;
-  padding-bottom: 30px;
+  padding-bottom: 40px;
 }
 
 .orders-content {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 0 15px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.page-title {
+  margin: 12px 0 18px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.state-msg {
+  background: #fff;
+  border-radius: 8px;
+  padding: 36px;
+  text-align: center;
+  color: #6b7280;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.state-msg .loader {
+  margin: 0 auto 12px;
+}
+
+.empty-state img {
+  max-width: 220px;
+}
+
+.shop-now-btn {
+  margin-top: 16px;
+  background: #2874f0;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .order-card {
   background: #fff;
-  border: 1px solid #dbdbdb;
-  border-radius: 4px;
-  margin-bottom: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.3s ease;
+  border: 1px solid #e8eaef;
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-.order-card:hover {
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
-}
-
-.order-header {
+.order-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f0f0f0;
+  gap: 12px;
   padding-bottom: 12px;
-  margin-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.order-header h3 {
-  font-size: 16px;
-  color: #212121;
-  margin: 0;
-}
-
-.status-badge {
-  font-size: 14px;
-  font-weight: 600;
-  color: #26a541; /* Success Green */
-  text-transform: capitalize;
-}
-
-/* Item styling */
-.order-item {
+.order-id-group {
   display: flex;
-  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.order-id-group .label {
+  font-size: 12px;
+  color: #6b7280;
+  letter-spacing: 0.3px;
+}
+
+.order-id-group .id-value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.status-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: #fff3cd;
+  color: #9a6a00;
+  border: 1px solid #ffe8a1;
+}
+
+.status-pill.completed,
+.status-pill.delivered {
+  background: #e7f8ee;
+  color: #1b7f3d;
+  border-color: #c8efd7;
+}
+
+.status-pill.cancelled,
+.status-pill.failed {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.order-body {
+  padding: 12px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-item-row {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 0.6fr;
+  gap: 12px;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid #f9f9f9;
+  border-bottom: 1px dashed #eef0f3;
 }
 
-.item-info {
-  font-size: 14px;
-  color: #212121;
+.order-item-row:last-child {
+  border-bottom: none;
 }
 
-.item-price {
+.item-main-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+.order-date {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.item-price p {
+  margin: 0;
   font-weight: 600;
-  color: #212121;
+  color: #111827;
+  text-align: right;
 }
 
-/* Empty/Loading States */
-.state-message {
-  text-align: center;
-  padding: 50px;
-  color: #878787;
-  font-size: 18px;
+.order-card-footer {
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.order-total-summary strong {
+  font-size: 16px;
+  color: #111827;
+}
+
+@media (max-width: 800px) {
+  .order-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .item-price p {
+    text-align: left;
+  }
+
+  .order-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

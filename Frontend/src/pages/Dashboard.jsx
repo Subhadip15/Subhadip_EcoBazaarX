@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import MainNavbar from "../components/MainNavbar";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { logout, getStoredUser } from "../services/authService";
@@ -8,7 +9,7 @@ import "../styles/Dashboard.css";
 function Dashboard({ onLogout }) {
   const navigate = useNavigate();
   const user = getStoredUser();
-  const { totalItems, items =[] } = useCart();
+  const { totalItems, items = [] } = useCart();
   const [showProfile, setShowProfile] = useState(false);
 
   const handleLogout = () => {
@@ -22,52 +23,12 @@ function Dashboard({ onLogout }) {
   return (
     <>
       {/* Navbar */}
-      <nav className="navbar">
-        <div className="navbar-left">
-          <h2>EcoBazar</h2>
-          <span className={`role-badge ${user?.role === "ADMIN" ? "admin" : "user"}`}>
-            {user?.role || "USER"}
-          </span>
-        </div>
-
-        <div className="navbar-right">
-          <div className="profile-wrapper">
-            <div
-              className="profile-icon"
-              aria-label="Open profile menu"
-              onClick={() => setShowProfile(!showProfile)}
-            >
-              {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
-            </div>
-
-            {showProfile && (
-              <div className="profile-dropdown">
-                <p><strong>Name:</strong> {user?.name || "-"}</p>
-                <p><strong>Email:</strong> {user?.email || "-"}</p>
-                <p><strong>Phone:</strong> {user?.phone || "-"}</p>
-                <p><strong>Role:</strong> {user?.role || "USER"}</p>
-                 <hr />
-
-    <Link to="/my-orders" className="dropdown-link">
-      My Orders
-    </Link>
-                <button onClick={handleLogout}>Logout</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <MainNavbar onLogout={handleLogout} />
 
       {/* Dashboard Content with Background Image Link */}
       <div className="dashboard-container">
-        <a 
-          href="https://ecobazar-ecommerce.vercel.app/_next/image?url=%2Fimages%2FBannar.png&w=3840&q=75" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="background-link"
-        >
-          <div className="background-image"></div>
-        </a>
+        <img src="https://ecobazar-ecommerce.vercel.app/_next/image?url=%2Fimages%2FBannar.png&w=3840&q=75" alt="" className="background-image" />
+       
         <div className="content-overlay">
           <p className="hero-kicker">Commerce Control Center</p>
           <h2>Welcome to EcoBazar, {user?.name || "User"}.</h2>
@@ -96,12 +57,7 @@ function Dashboard({ onLogout }) {
             >
               Open Product Catalog
             </button>
-            <button
-              className="open-catalog-btn secondary"
-              onClick={() => navigate("/cart")}
-            >
-              Smart Cart ({items.length})
-            </button>
+
           </div>
         </div>
       </div>

@@ -35,22 +35,33 @@ public class CheckoutService {
         Cart cart = cartRepository.findByUser(user)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        if (cart.getCartItems().isEmpty()) {
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
         }
 
-        // Save Address
-        Address address = Address.builder()
-                .street(request.getAddress().getStreet())
-                .city(request.getAddress().getCity())
-                .state(request.getAddress().getState())
-                .zipCode(request.getAddress().getZipCode())
-                .user(user)
-                .build();
+        // --- FIXED ADDRESS LOGIC ---
+        Address address;
+        if (request.getAddressId() != null) {
+            // Case 1: Use an existing address ID from the database
+            address = addressRepository.findById(request.getAddressId())
+                    .orElseThrow(() -> new RuntimeException("Selected address not found"));
+        } else if (request.getNewAddress() != null) {
+            // Case 2: Save the new address sent from React 'newAddress' field
+            address = Address.builder()
+                    .fullName(request.getNewAddress().getFullName()) // Using the DTO's name
+                    .street(request.getNewAddress().getStreet())
+                    .city(request.getNewAddress().getCity())
+                    .state(request.getNewAddress().getState())
+                    .zipCode(request.getNewAddress().getZipCode())
+                    .user(user)
+                    .build();
+            address = addressRepository.save(address);
+        } else {
+            // This prevents the NullPointerException you were seeing
+            throw new RuntimeException("No delivery address details provided in request");
+        }
 
-        addressRepository.save(address);
-
-        // Create Order FIRST
+        // Create Order Object
         Order order = Order.builder()
                 .orderNumber(OrderIdGenerator.generateOrderId())
                 .user(user)
@@ -58,7 +69,8 @@ public class CheckoutService {
                 .status(AppConstants.ORDER_PROCESSING)
                 .orderDate(LocalDateTime.now())
                 .paymentMethod(request.getPaymentMethod())
-                .customerName(request.getFullName())
+                // Use Name from request, else fall back to the address name
+                .customerName(request.getFullName() != null ? request.getFullName() : address.getFullName())
                 .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
                 .build();
 
@@ -67,12 +79,10 @@ public class CheckoutService {
         double totalEmission = 0.0;
 
         for (CartItem ci : cart.getCartItems()) {
-
             Product product = ci.getProduct();
             int quantity = ci.getQuantity();
             double price = product.getPrice();
-            double emissionPerItem =
-                    product.getEmission() != null ? product.getEmission() : 0.5;
+            double emissionPerItem = product.getEmission() != null ? product.getEmission() : 0.5;
 
             double itemSubtotal = price * quantity;
             double itemEmission = emissionPerItem * quantity;
@@ -93,7 +103,8 @@ public class CheckoutService {
             orderItems.add(orderItem);
         }
 
-        double shipping = subtotal > 100 ? 0.0 : 7.5;
+        // Logic for Flipkart-style shipping (Free over 500)
+        double shipping = subtotal > 500 ? 0.0 : 40.0;
 
         order.setTotalAmount(subtotal + shipping);
         order.setTotalEmission(totalEmission);
@@ -111,7 +122,6 @@ public class CheckoutService {
 
     // ================= PAY ORDER =================
     public OrderResponse payOrder(Long orderId, Long userId) {
-
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -120,17 +130,14 @@ public class CheckoutService {
         }
 
         order.setStatus(AppConstants.ORDER_PLACED);
-
         return mapToOrderResponse(order);
     }
 
     // ================= MAP ORDER → DTO =================
     private OrderResponse mapToOrderResponse(Order order) {
-
         List<OrderItemResponse> itemResponses = new ArrayList<>();
 
         for (OrderItem oi : order.getOrderItems()) {
-
             itemResponses.add(OrderItemResponse.builder()
                     .productId(oi.getProductId())
                     .productName(oi.getProductName())

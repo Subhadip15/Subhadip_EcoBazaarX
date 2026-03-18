@@ -10,12 +10,13 @@ import lombok.*;
 @Builder
 public class CheckoutRequest {
 
-    private Long addressId;       // ID of the Address entity
-    private String paymentMethod; // e.g., "COD" or "CARD"
-    private String fullName;      // Customer full name
-    private String email;         // Optional email if different from user
+    private Long addressId;         // Sent when selecting an existing address radio button
 
+    private AddressRequest newAddress; // Sent when "Add/Edit" form is used in React
 
+    private String paymentMethod;   // "cod", "card", or "upi"
 
-    private AddressRequest address;
+    private String fullName;        // The "Deliver to" name from the UI
+
+    private String email;           // Optional: for guest checkout or confirmation
 }

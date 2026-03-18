@@ -15,4 +15,5 @@ public class CartItemResponse {
     private double price;
     private double subtotal;
     private double emission; // estimated CO2 per item
+    private String image;
 }

@@ -26,6 +26,7 @@ public class OrderService {
     private final AddressRepository addressRepository;
 
     // ================= PLACE ORDER =================
+    // ================= PLACE ORDER =================
     public OrderResponse placeOrder(String email, CheckoutRequest request) {
 
         Users user = userRepository.findByEmail(email)
@@ -38,19 +39,39 @@ public class OrderService {
             throw new RuntimeException("Cart is empty");
         }
 
-        Address addressEntity = addressRepository.findById(request.getAddressId())
-                .orElseThrow(() -> new RuntimeException("Address not found"));
+        // --- FIXED: ADDRESS LOGIC ---
+        Address addressEntity;
+        if (request.getAddressId() != null) {
+            // Case 1: Use existing address from database
+            addressEntity = addressRepository.findById(request.getAddressId())
+                    .orElseThrow(() -> new RuntimeException("Address not found"));
+        } else if (request.getNewAddress() != null) {
+            // Case 2: Save the new/edited address sent from React
+            var addrDto = request.getNewAddress();
+            Address newAddr = Address.builder()
+                    .fullName(addrDto.getFullName())
+                    .street(addrDto.getStreet())
+                    .city(addrDto.getCity())
+                    .state(addrDto.getState())
+                    .zipCode(addrDto.getZipCode())
+                    .user(user)
+                    .build();
+            addressEntity = addressRepository.save(newAddr);
+        } else {
+            throw new RuntimeException("No delivery address provided");
+        }
 
         double subtotal = 0.0;
         double totalEmission = 0.0;
 
-        // 1️⃣ Create Order FIRST
+        // Create Order
         Order order = Order.builder()
                 .user(user)
                 .orderDate(LocalDateTime.now())
                 .status(AppConstants.ORDER_PROCESSING)
                 .paymentMethod(request.getPaymentMethod())
-                .customerName(request.getFullName())
+                // Use the name from the address if fullName in request is null
+                .customerName(request.getFullName() != null ? request.getFullName() : addressEntity.getFullName())
                 .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
                 .address(addressEntity)
                 .orderNumber(AppConstants.ORDER_PREFIX + System.currentTimeMillis())
@@ -58,14 +79,11 @@ public class OrderService {
 
         List<OrderItem> orderItems = new ArrayList<>();
 
-        // 2️⃣ Convert CartItems → OrderItems
         for (CartItem ci : cart.getCartItems()) {
-
             Product product = ci.getProduct();
             int quantity = ci.getQuantity();
             double price = product.getPrice();
-            double emissionPerItem =
-                    product.getEmission() != null ? product.getEmission() : 0.5;
+            double emissionPerItem = product.getEmission() != null ? product.getEmission() : 0.5;
 
             double itemSubtotal = price * quantity;
             double itemEmission = emissionPerItem * quantity;
@@ -86,17 +104,17 @@ public class OrderService {
             orderItems.add(orderItem);
         }
 
-        double shipping = subtotal > 100 ? 0.0 : 7.5;
+        // Standard Shipping logic (Flipkart Style)
+        double shipping = subtotal > 1000 ? 0.0 : 50.0;
 
         order.setTotalAmount(subtotal + shipping);
         order.setTotalEmission(totalEmission);
         order.setShipping(shipping);
         order.setOrderItems(orderItems);
 
-        // Save order (CascadeType.ALL should save items)
         Order savedOrder = orderRepository.save(order);
 
-        // 3️⃣ Clear cart
+        // Clear cart items safely
         cart.getCartItems().clear();
         cartRepository.save(cart);
 

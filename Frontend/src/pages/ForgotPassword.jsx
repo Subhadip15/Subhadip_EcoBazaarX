@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config/api";
+import { forgotPassword, resetPassword } from "../services/authService";
 import "../styles/ForgotPassword.css";
 
 function ForgotPassword() {
@@ -27,22 +27,10 @@ function ForgotPassword() {
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/user/forgot?email=${encodeURIComponent(email)}`,
-        {
-          method: "POST",
-        }
-      );
-
-      const data = await res.json().catch(() => ({}));
-      const serverMessage = data?.message || "Failed to send OTP";
-
-      if (!res.ok || serverMessage === "User not found") {
-        setError(serverMessage);
-      } else {
-        setMessage(serverMessage);
-        setStep(2);
-      }
+      const data = await forgotPassword(email);
+      const serverMessage = data?.message || "OTP sent";
+      setMessage(serverMessage);
+      setStep(2);
     } catch {
       setError("Failed to send OTP");
     } finally {
@@ -67,23 +55,10 @@ function ForgotPassword() {
 
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        email,
-        otp,
-        newPassword,
-      });
-
-      const res = await fetch(`${API_BASE_URL}/user/reset?${params.toString()}`, {
-        method: "POST",
-      });
-
-      const data = await res.json().catch(() => ({}));
-      const serverMessage = data?.message || "Failed to reset password";
-
-      if (res.ok && serverMessage.toLowerCase().includes("successful")) {
+      const data = await resetPassword({ email, otp, newPassword });
+      const serverMessage = data?.message || "Password reset";
+      if (serverMessage.toLowerCase().includes("successful")) {
         setMessage(serverMessage);
-
-        // Redirect to login after short delay
         setTimeout(() => {
           navigate("/login");
         }, 1500);

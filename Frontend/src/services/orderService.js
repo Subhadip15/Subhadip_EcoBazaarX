@@ -1,52 +1,51 @@
 // src/services/orderService.js
-import axios from "axios";
-
-// Base API URL
-const API_URL = "http://localhost:8080/api/orders";
-
-// ================= AUTH HEADER =================
-function getAuthHeader() {
-  const token = localStorage.getItem("token"); // JWT stored after login
-  if (!token) {
-    throw new Error("User not authenticated");
-  }
-  return { Authorization: `Bearer ${token}` };
-}
+import api from "./api";
 
 // ================= PLACE ORDER =================
 /**
  * Place a new order
- * @param {Object} orderData - { fullName, email, addressId, paymentMethod }
- * @returns {Promise} Axios response
+ * @param {Object} orderData - Structure:
+ * {
+ * addressId: number | null,
+ * newAddress: { fullName, street, city, state, zipCode } | null,
+ * items: Array,
+ * totalAmount: number,
+ * paymentMethod: string,
+ * totalEmission: number
+ * }
  */
 export async function placeOrderApi(orderData) {
   try {
-    const response = await axios.post(`${API_URL}/place`, orderData, {
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeader(),
-      },
-    });
+    // Note: If your Controller uses @PostMapping("/place"), keep /place
+    // If it uses @PostMapping(""), change to API_URL
+    const response = await api.post("/orders/place", orderData);
+    
     return response.data;
   } catch (error) {
-    console.error("Error placing order:", error.response || error);
-    throw error.response?.data || { message: "Failed to place order" };
+    // 🔍 ENHANCED LOGGING:
+    // This allows you to see exactly why the Backend threw a 500 error
+    if (error.response) {
+      console.error("Backend Error Status:", error.response.status);
+      console.error("Backend Error Message:", error.response.data);
+    } else {
+      console.error("Network/Request Error:", error.message);
+    }
+    
+    // Throw the specific message back to the UI Toast
+    throw error.response?.data || { message: "Failed to connect to order server" };
   }
 }
 
 // ================= FETCH USER ORDERS =================
 /**
  * Fetch all orders for the logged-in user
- * @returns {Promise} Array of orders
  */
 export async function fetchOrdersApi() {
   try {
-    const response = await axios.get(API_URL, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.get("/orders");
     return response.data;
   } catch (error) {
-    console.error("Error fetching orders:", error.response || error);
+    console.error("Error fetching orders:", error.response?.data || error.message);
     throw error.response?.data || { message: "Failed to fetch orders" };
   }
 }
@@ -54,17 +53,13 @@ export async function fetchOrdersApi() {
 // ================= FETCH SINGLE ORDER =================
 /**
  * Fetch single order by ID
- * @param {number|string} orderId - ID of the order
- * @returns {Promise} Order details
  */
 export async function fetchOrderById(orderId) {
   try {
-    const response = await axios.get(`${API_URL}/${orderId}`, {
-      headers: getAuthHeader(),
-    });
+    const response = await api.get(`/orders/${orderId}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching order:", error.response || error);
-    throw error.response?.data || { message: "Failed to fetch order" };
+    console.error("Error fetching order detail:", error.response?.data || error.message);
+    throw error.response?.data || { message: "Order not found" };
   }
 }

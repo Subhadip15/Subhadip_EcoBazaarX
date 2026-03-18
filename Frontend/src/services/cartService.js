@@ -1,37 +1,14 @@
-import axios from "axios";
-import { API_BASE_URL } from "../config/api";
-
-const cartApi = axios.create({
-  baseURL: `${API_BASE_URL}/api/cart`,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Add JWT token automatically
-cartApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      return Promise.reject(new Error("User not authenticated. Please login."));
-    }
-
-    config.headers.Authorization = `Bearer ${token}`;
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import api from "./api";
 
 // ================= LOAD CART =================
 export async function fetchCart() {
-  const res = await cartApi.get("");
+  const res = await api.get("/cart");
   return res.data;
 }
 
 // ================= ADD TO CART =================
 export async function addToCart(productId, quantity = 1) {
-  const res = await cartApi.post("/add", {
+  const res = await api.post("/cart/add", {
     productId,
     quantity,
   });
@@ -40,20 +17,20 @@ export async function addToCart(productId, quantity = 1) {
 
 // ================= REMOVE ITEM =================
 export async function removeFromCart(itemId) {
-  const res = await cartApi.delete(`/remove/${itemId}`);
+  const res = await api.delete(`/cart/remove/${itemId}`);
   return res.data;
 }
 
 // ================= CLEAR CART =================
 export async function clearCart() {
-  const res = await cartApi.delete("/clear");
+  const res = await api.delete("/cart/clear");
   return res.data;
 }
 
 // ================= UPDATE QUANTITY =================
 export async function updateQuantity(productId, quantityChange) {
   // PATCH request using your UpdateCartRequest DTO
-  const res = await cartApi.patch("/update", {
+  const res = await api.patch("/cart/update", {
     productId,
     quantityChange, // can be +1 or -1
   });
